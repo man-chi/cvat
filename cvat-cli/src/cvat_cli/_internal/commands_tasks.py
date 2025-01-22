@@ -7,7 +7,6 @@ from __future__ import annotations
 import argparse
 import importlib
 import importlib.util
-import json
 import textwrap
 from collections.abc import Sequence
 from pathlib import Path
@@ -19,32 +18,28 @@ from cvat_sdk import Client, models
 from cvat_sdk.core.helpers import DeferredTqdmProgressReporter
 from cvat_sdk.core.proxies.tasks import ResourceType
 
-from .command_base import CommandGroup
-from .parsers import BuildDictAction, parse_function_parameter, parse_label_arg, parse_resource_type
+from .command_base import CommandGroup, GenericCommand, GenericDeleteCommand, GenericListCommand
+from .parsers import (
+    BuildDictAction,
+    parse_function_parameter,
+    parse_label_arg,
+    parse_resource_type,
+    parse_threshold,
+)
 
-COMMANDS = CommandGroup(description="Perform common operations related to CVAT tasks.")
+COMMANDS = CommandGroup(description="Perform operations on CVAT tasks.")
+
+
+class GenericTaskCommand(GenericCommand):
+    resource_type_str = "task"
+
+    def repo(self, client: Client):
+        return client.tasks
 
 
 @COMMANDS.command_class("ls")
-class TaskList:
-    description = "List all CVAT tasks in either basic or JSON format."
-
-    def configure_parser(self, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument(
-            "--json",
-            dest="use_json_output",
-            default=False,
-            action="store_true",
-            help="output JSON data",
-        )
-
-    def execute(self, client: Client, *, use_json_output: bool = False):
-        results = client.tasks.list(return_json=use_json_output)
-        if use_json_output:
-            print(json.dumps(json.loads(results), indent=2))
-        else:
-            for r in results:
-                print(r.id)
+class TaskList(GenericListCommand, GenericTaskCommand):
+    pass
 
 
 @COMMANDS.command_class("create")
@@ -231,18 +226,12 @@ class TaskCreate:
             status_check_period=status_check_period,
             pbar=DeferredTqdmProgressReporter(),
         )
-        print("Created task id", task.id)
+        print(task.id)
 
 
 @COMMANDS.command_class("delete")
-class TaskDelete:
-    description = "Delete a list of tasks, ignoring those which don't exist."
-
-    def configure_parser(self, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument("task_ids", type=int, help="list of task IDs", nargs="+")
-
-    def execute(self, client: Client, *, task_ids: Sequence[int]) -> None:
-        client.tasks.remove_by_ids(task_ids=task_ids)
+class TaskDelete(GenericDeleteCommand, GenericTaskCommand):
+    pass
 
 
 @COMMANDS.command_class("frames")
@@ -285,11 +274,11 @@ class TaskFrames:
         )
 
 
-@COMMANDS.command_class("dump")
-class TaskDump:
+@COMMANDS.command_class("export-dataset")
+class TaskExportDataset:
     description = textwrap.dedent(
         """\
-        Download annotations for a task in the specified format (e.g. 'YOLO ZIP 1.0').
+        Export a task as a dataset in the specified format (e.g. 'YOLO 1.1').
         """
     )
 
@@ -337,12 +326,12 @@ class TaskDump:
         )
 
 
-@COMMANDS.command_class("upload")
-class TaskUpload:
+@COMMANDS.command_class("import-dataset")
+class TaskImportDataset:
     description = textwrap.dedent(
         """\
-        Upload annotations for a task in the specified format
-        (e.g. 'YOLO ZIP 1.0').
+        Import annotations into a task from a dataset in the specified format
+        (e.g. 'YOLO 1.1').
         """
     )
 
@@ -372,8 +361,8 @@ class TaskUpload:
         )
 
 
-@COMMANDS.command_class("export")
-class TaskExport:
+@COMMANDS.command_class("backup")
+class TaskBackup:
     description = """Download a task backup."""
 
     def configure_parser(self, parser: argparse.ArgumentParser) -> None:
@@ -397,9 +386,9 @@ class TaskExport:
         )
 
 
-@COMMANDS.command_class("import")
-class TaskImport:
-    description = """Import a task from a backup file."""
+@COMMANDS.command_class("create-from-backup")
+class TaskCreateFromBackup:
+    description = """Create a task from a backup file."""
 
     def configure_parser(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument("filename", type=str, help="upload file")
@@ -412,11 +401,12 @@ class TaskImport:
         )
 
     def execute(self, client: Client, *, filename: str, status_check_period: int) -> None:
-        client.tasks.create_from_backup(
+        task = client.tasks.create_from_backup(
             filename=filename,
             status_check_period=status_check_period,
             pbar=DeferredTqdmProgressReporter(),
         )
+        print(task.id)
 
 
 @COMMANDS.command_class("auto-annotate")
@@ -463,6 +453,19 @@ class TaskAutoAnnotate:
             help="Allow the function to declare labels not configured in the task",
         )
 
+        parser.add_argument(
+            "--conf-threshold",
+            type=parse_threshold,
+            help="Confidence threshold for filtering detections",
+            default=None,
+        )
+
+        parser.add_argument(
+            "--conv-mask-to-poly",
+            action="store_true",
+            help="Convert mask shapes to polygon shapes",
+        )
+
     def execute(
         self,
         client: Client,
@@ -473,6 +476,8 @@ class TaskAutoAnnotate:
         function_parameters: dict[str, Any],
         clear_existing: bool = False,
         allow_unmatched_labels: bool = False,
+        conf_threshold: Optional[float],
+        conv_mask_to_poly: bool,
     ) -> None:
         if function_module is not None:
             function = importlib.import_module(function_module)
@@ -497,4 +502,6 @@ class TaskAutoAnnotate:
             pbar=DeferredTqdmProgressReporter(),
             clear_existing=clear_existing,
             allow_unmatched_labels=allow_unmatched_labels,
+            conf_threshold=conf_threshold,
+            conv_mask_to_poly=conv_mask_to_poly,
         )
