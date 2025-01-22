@@ -171,7 +171,12 @@ As the codebase is large, it can be difficult to find a specific file. Here are 
 
 ## Potential issues and solutions:
 
-You might run into an error like this while trying to run the project on your local machine:
+When you run this command (which is the command to install the development dependencies):
+
+```bash
+pip install -r cvat/requirements/development.txt
+```
+You may encounter the following error:
 
 ```bash
 exit code: 1
@@ -189,7 +194,7 @@ exit code: 1
           raise OSError(
       OSError: Could not find library geos_c or load any of its variants ['libgeos_c.so.1', 'libgeos_c.so']
       [end of output]
-```
+````
 
 To fix this error, you need to install the `geos` library. You can do so by running the following command:
 
