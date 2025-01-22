@@ -13,8 +13,17 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
-    "baseUrl": "src"
+    "jsx": "react-jsx",
+    "baseUrl": "src",
+    "types": ["jest", "@testing-library/jest-dom"]
   },
-  "include": ["./index.d.ts", "src/index.tsx", "src/assets/index.d.ts", "plugins/**/*", "src"]
+  "include": [
+    "./index.d.ts",
+    "src/index.tsx",
+    "src/assets/index.d.ts",
+    "plugins/**/*",
+    "src",
+    "babel.config.json",
+    "jest.config.ts"
+  ]
 }

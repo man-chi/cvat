@@ -21,7 +21,6 @@ import RegisterPageContainer from 'containers/register-page/register-page';
 import ResetPasswordPageConfirmComponent from 'components/reset-password-confirm-page/reset-password-confirm-page';
 import ResetPasswordPageComponent from 'components/reset-password-page/reset-password-page';
 
-import Header from 'components/header/header';
 import GlobalErrorBoundary from 'components/global-error-boundary/global-error-boundary';
 
 import ShortcutsDialog from 'components/shortcuts-dialog/shortcuts-dialog';
@@ -493,7 +492,6 @@ class CVATApplication extends React.PureComponent<CVATAppProps & RouteComponentP
                     <GlobalErrorBoundary>
                         <ShortcutsContextProvider>
                             <Layout>
-                                <Header />
                                 <Layout.Content style={{ height: '100%' }}>
                                     <ShortcutsDialog />
                                     <Switch>

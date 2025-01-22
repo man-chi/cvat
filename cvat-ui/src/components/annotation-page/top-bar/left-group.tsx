@@ -10,15 +10,16 @@ import Modal from 'antd/lib/modal';
 import Button from 'antd/lib/button';
 import Text from 'antd/lib/typography/Text';
 
-import { UndoIcon, RedoIcon } from 'icons';
-import { ActiveControl, ToolsBlockerState } from 'reducers';
-import { registerComponentShortcuts } from 'actions/shortcuts-actions';
-import AnnotationMenuComponent from 'components/annotation-page/top-bar/annotation-menu';
-import CVATTooltip from 'components/common/cvat-tooltip';
-import { ShortcutScope } from 'utils/enums';
-import { subKeyMap } from 'utils/component-subkeymap';
-import GlobalHotKeys, { KeyMap } from 'utils/mousetrap-react';
+import { ShortcutScope } from '../../../utils/enums';
+import { subKeyMap } from '../../../utils/component-subkeymap';
+import CVATTooltip from '../../common/cvat-tooltip';
+import GlobalHotKeys, { KeyMap } from '../../../utils/mousetrap-react';
+import { registerComponentShortcuts } from '../../../actions/shortcuts-actions';
+import { ActiveControl, ToolsBlockerState } from '../../../reducers';
+import { UndoIcon, RedoIcon } from '../../../icons';
 import SaveAnnotationsButton from './save-annotations-button';
+import ProcessAiButton from './process-ai-button';
+import ShowRandomUserDetails from './show-random-user';
 
 interface Props {
     saving: boolean;
@@ -124,7 +125,6 @@ function LeftGroup(props: Props): JSX.Element {
                 </Modal>
             )}
             <Col className='cvat-annotation-header-left-group'>
-                <AnnotationMenuComponent />
                 <SaveAnnotationsButton />
                 <CVATTooltip overlay={`Undo: ${undoAction} ${undoShortcut}`}>
                     <Button
@@ -148,6 +148,8 @@ function LeftGroup(props: Props): JSX.Element {
                         Redo
                     </Button>
                 </CVATTooltip>
+                <ProcessAiButton />
+                <ShowRandomUserDetails />
                 {includesDoneButton ? (
                     <CVATTooltip overlay={`Press "${drawShortcut}" to finish`}>
                         <Button type='link' className='cvat-annotation-header-done-button cvat-annotation-header-button' onClick={onFinishDraw}>

@@ -14,7 +14,6 @@ import { KeyMap } from 'utils/mousetrap-react';
 import LeftGroup from './left-group';
 import PlayerButtons from './player-buttons';
 import PlayerNavigation from './player-navigation';
-import RightGroup from './right-group';
 
 interface Props {
     playing: boolean;
@@ -98,14 +97,8 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
         focusFrameInputShortcut,
         activeControl,
         toolsBlockerState,
-        annotationFilters,
-        initialOpenGuide,
         navigationType,
-        jobInstance,
         keyMap,
-        showStatistics,
-        showFilters,
-        changeWorkspace,
         onSwitchPlay,
         onPrevFrame,
         onNextFrame,
@@ -201,15 +194,6 @@ export default function AnnotationTopBarComponent(props: Props): JSX.Element {
                         .map((menuItem) => menuItem[0]) }
                 </Row>
             </Col>
-            <RightGroup
-                workspace={workspace}
-                jobInstance={jobInstance}
-                annotationFilters={annotationFilters}
-                initialOpenGuide={initialOpenGuide}
-                changeWorkspace={changeWorkspace}
-                showStatistics={showStatistics}
-                showFilters={showFilters}
-            />
         </Row>
     );
 }

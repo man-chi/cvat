@@ -331,3 +331,7 @@
     justify-content: center;
     margin-top: $grid-unit-size * 2;
 }
+
+.cvat-ai-control {
+    @extend .cvat-draw-mask-control;
+}
